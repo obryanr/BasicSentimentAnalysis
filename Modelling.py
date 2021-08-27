@@ -20,6 +20,9 @@ from tensorflow.keras.preprocessing import sequence
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.callbacks import EarlyStopping
 
+# Preprocessing
+from sklearn.model_selection import train_test_split
+
 def pretrained_model(embedding_matrix, word_index, num_classes, max_len=124, embed_dim=300, max_words=100000, num_filters=64, weight_decay=1e-4):
   nb_words = min(max_words, len(word_index))
   
@@ -78,23 +81,23 @@ if __name__ == "__main__":
 	
 	# Split
 	X_train, X_test, y_train, y_test = train_test_split(X, 
-														y, 
-														split_size=0.2, 
-														random_state=1, 
-														stratify=y)
+							    y, 
+							    split_size=0.2, 
+							    random_state=1, 
+							    stratify=y)
 														
 	# Convert to sequence
 	X_train, X_test, word_index = preprocessor.to_sequence(X_train,
-														   X_test)
+							       X_test)
 
 	# Generate embedding matrix
 	embedding_matrix = preprocessor.embedding(word_index)
 	
 	#define callbacks
 	early_stopping = EarlyStopping(monitor='val_loss', 
-								   min_delta=0.01, 
-								   patience=4, 
-								   verbose=1)
+				       min_delta=0.01, 
+				       patience=4, 
+				       verbose=1)
 	callbacks_list = [early_stopping]
 	
 	# Number of classes/ labels
@@ -102,20 +105,20 @@ if __name__ == "__main__":
 
 	# Get embedding matrix via alternative fasttext
 	embeddings_word2vec = get_embeddings(word2vec_model, 
-										 df["Content"],
-										 k=300)
+					     df["Content"],
+					     k=300)
 
 	# Init model
 	model = pretrained_model(embeddings_word2vec, 
-							 word_index,
-							 num_classes=num_classes)
+				 word_index,
+				 num_classes=num_classes)
 							 
 	#model training
 	hist = model.fit(X_train, 
-					 y_train, 
-					 batch_size=16, 
-					 epochs=10,
-					 callbacks=callbacks_list,
-					 validation_split=0.1, 
-					 shuffle=True, 
-					 verbose=2)
+			 y_train, 
+			 batch_size=16, 
+			 epochs=10,
+			 callbacks=callbacks_list,
+			 validation_split=0.1, 
+			 shuffle=True, 
+			 verbose=2)
