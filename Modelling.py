@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+
+
 '''EMBEDDING MATRIX (NLP PRETRAINED MODEL (FASTTEXT)) INTO DL MODELLING'''
 
 # UDF
