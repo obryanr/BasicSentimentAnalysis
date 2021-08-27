@@ -77,7 +77,7 @@ if __name__ == "__main__":
 	df = pd.read_csv('Hate Speech.csv', usecols=['Content', 'Class'])
 	
 	# Preprocessing
-	preprocessor = nlp_preprocessing(embedding_index)
+	preprocessor = NLPPreprocessing(embedding_index)
 	df['Content'] = preprocessor.clean_text(df['Content'])
 	df['Content'] = preprocessor.replace_slang(df['Content'])
 	df['Content'] = preprocessor.stem(df['Content'])
