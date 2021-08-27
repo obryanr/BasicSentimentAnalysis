@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+
+# Common Packages
+from tqdm import tqdm
+import codecs
 import pandas as pd
 import numpy as np
 import ast
