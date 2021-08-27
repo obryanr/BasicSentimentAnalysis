@@ -1,3 +1,19 @@
+#!/usr/bin/env python3
+import pandas as pd
+import numpy as np
+import ast
+import re
+
+# NLP
+import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+nltk.download('punkt')
+nltk.download('stopwords')
+
+from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
+
+
 class NLPPreprocessing:
     def __init__(self, max_len=124, max_words=100000, embed_dim=300, embedding_index=None):
         self.max_len = max_len
@@ -174,6 +190,63 @@ class NLPPreprocessing:
         
         else:
             return tweet_polarity
+
+    def to_sequence(self, X_train, X_test, to_list=True):
+        if to_list:
+           # Convert dataframe into list
+           X_train = X_train.tolist()
+           X_test = X_test.tolist() 
+
+         stop_words = set(stopwords.words('indonesian'))
+
+         # Start Preprocessing
+         print("pre-processing train data...")
+         processed_docs_train = []
+         for doc in tqdm(X_train):
+           tokens = tokenizer.tokenize(doc)
+           filtered = [word for word in tokens if word not in stop_words]
+           processed_docs_train.append(" ".join(filtered))
+         print("Train data has been preprocessed.")
+
+         print("\npre-processing test data...")
+         processed_docs_test = []
+         for doc in tqdm(X_test):
+             tokens = tokenizer.tokenize(doc)
+             filtered = [word for word in tokens if word not in stop_words]
+             processed_docs_test.append(" ".join(filtered))
+         print("Test data has been preprocessed.")
+
+         # To Sequence
+         tokenizer = Tokenizer(num_words=self.max_words, lower=True, char_level=False)
+         tokenizer.fit_on_texts(processed_docs_train)
+         word_seq_train = tokenizer.texts_to_sequences(processed_docs_train)
+         word_seq_test = tokenizer.texts_to_sequences(processed_docs_test)
+         word_index = tokenizer.word_index
+         print("dictionary size: ", len(word_index))
+
+         #pad sequences
+         word_seq_train = sequence.pad_sequences(word_seq_train, maxlen=self.max_len)
+         word_seq_test = sequence.pad_sequences(word_seq_test, maxlen=self.max_len)
+
+         return word_seq_train, word_seq_test, word_index
+
+    def embedding(self, word_index):
+      words_not_found = []
+      vocab_size = min(self.max_words, vocab_size(word_index))
+      embedding_matrix = np.zeros((vocab_size, self.embed_dim))
+      for word, i in word_index.items():
+          if i >= vocab_size:
+              continue  
+          embedding_vector = self.embedding_index.get(word)
+          if (embedding_vector is not None) and len(embedding_vector) > 0:
+              # words not found in embedding index will be all-zeros.
+              embedding_matrix[i] = embedding_vector
+          else:
+              words_not_found.append(word)
+
+      print('number of null word embeddings: %d' % np.sum(np.sum(embedding_matrix, axis=1) == 0))
+      print("sample words not found: ", np.random.choice(words_not_found, 10))
+      return embedding_matrix
 			
 class NLPVectorizer:
     def bag_of_words(self, method='tf-idf', ngram=(1, 1)):
